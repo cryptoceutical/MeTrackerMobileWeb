@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        label { display: block; margin-bottom: 5px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 5px; }
+        button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        .error { color: red; margin-top: 5px; display: none; }
+        .notification { 
+            padding: 10px; 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Daily Tracker</h2>
+        <div id="notification" class="notification"></div>
+        
+        <label for="date">Date:</label>
+        <input type="date" id="date" required>
+        
+        <h3>Mood (1-10)</h3>
+        <label>Morning:</label>
+        <div class="radio-group" id="mood-morning"></div>
+        <div class="error" id="mood-morning-error">Please select a value for morning mood</div>
+        
+        <label>Midday:</label>
+        <div class="radio-group" id="mood-midday"></div>
+        <div class="error" id="mood-midday-error">Please select a value for midday mood</div>
+        
+        <label>Evening:</label>
+        <div class="radio-group" id="mood-evening"></div>
+        <div class="error" id="mood-evening-error">Please select a value for evening mood</div>
+        
+        <h3>Energy Level (1-10)</h3>
+        <label>Morning:</label>
+        <div class="radio-group" id="energy-morning"></div>
+        <div class="error" id="energy-morning-error">Please select a value for morning energy</div>
+        
+        <label>Midday:</label>
+        <div class="radio-group" id="energy-midday"></div>
+        <div class="error" id="energy-midday-error">Please select a value for midday energy</div>
+        
+        <label>Evening:</label>
+        <div class="radio-group" id="energy-evening"></div>
+        <div class="error" id="energy-evening-error">Please select a value for evening energy</div>
+        
+        <h3>Did I Have Enough? (Y/N)</h3>
+        <label><input type="checkbox" id="rest"> Rest</label>
+        <label><input type="checkbox" id="sleep"> Sleep</label>
+        <label><input type="checkbox" id="fresh-air"> Fresh Air</label>
+        <label><input type="checkbox" id="water"> Water</label>
+        <label><input type="checkbox" id="exercise"> Exercise</label>
+        <label><input type="checkbox" id="vitamins"> Vitamins</label>
+        <label><input type="checkbox" id="protein"> Protein</label>
+        
+        <button onclick="saveData()">Save</button>
+    </div>
+
+    <script>
+        document.getElementById('date').valueAsDate = new Date();
+
+        function createRadioButtons(groupId) {
+            let group = document.getElementById(groupId);
+            for (let i = 1; i <= 10; i++) {
+                let radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = groupId;
+                radio.value = i;
+                radio.id = `${groupId}-${i}`;
+                
+                let label = document.createElement("label");
+                label.htmlFor = `${groupId}-${i}`;
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(i));
+                group.appendChild(label);
+            }
+        }
+
+        ['mood-morning', 'mood-midday', 'mood-evening', 'energy-morning', 'energy-midday', 'energy-evening'].forEach(createRadioButtons);
+
+        function validateForm() {
+            const radioGroups = ['mood-morning', 'mood-midday', 'mood-evening', 'energy-morning', 'energy-midday', 'energy-evening'];
+            let isValid = true;
+            let emptyFields = [];
+            
+            // Reset all error messages
+            radioGroups.forEach(group => {
+                document.getElementById(`${group}-error`).style.display = 'none';
+            });
+            
+            // Check each radio group
+            radioGroups.forEach(group => {
+                if (!document.querySelector(`input[name="${group}"]:checked`)) {
+                    document.getElementById(`${group}-error`).style.display = 'block';
+                    isValid = false;
+                    
+                    // Create human-readable field name for notification
+                    let fieldName = group.replace('-', ' ');
+                    fieldName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+                    emptyFields.push(fieldName);
+                }
+            });
+            
+            // Show notification with all empty fields
+            if (!isValid) {
+                const notification = document.getElementById('notification');
+                notification.textContent = `Please fill in the following required fields: ${emptyFields.join(', ')}`;
+                notification.style.display = 'block';
+                
+                // Auto-hide notification after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+            
+            return isValid;
+        }
+
+        function saveData() {
+            if (!validateForm()) {
+                return;
+            }
+            
+            let data = {
+                date: document.getElementById('date').value,
+                mood: {
+                    morning: document.querySelector('input[name="mood-morning"]:checked').value,
+                    midday: document.querySelector('input[name="mood-midday"]:checked').value,
+                    evening: document.querySelector('input[name="mood-evening"]:checked').value
+                },
+                energy: {
+                    morning: document.querySelector('input[name="energy-morning"]:checked').value,
+                    midday: document.querySelector('input[name="energy-midday"]:checked').value,
+                    evening: document.querySelector('input[name="energy-evening"]:checked').value
+                },
+                essentials: {
+                    rest: document.getElementById('rest').checked,
+                    sleep: document.getElementById('sleep').checked,
+                    freshAir: document.getElementById('fresh-air').checked,
+                    water: document.getElementById('water').checked,
+                    exercise: document.getElementById('exercise').checked,
+                    vitamins: document.getElementById('vitamins').checked,
+                    protein: document.getElementById('protein').checked
+                }
+            };
+            
+            // Create a single line CSV string
+            let csvValues = [
+                data.date,
+                data.mood.morning,
+                data.mood.midday,
+                data.mood.evening,
+                data.energy.morning,
+                data.energy.midday,
+                data.energy.evening,
+                data.essentials.rest ? 'Yes' : 'No',
+                data.essentials.sleep ? 'Yes' : 'No',
+                data.essentials.freshAir ? 'Yes' : 'No',
+                data.essentials.water ? 'Yes' : 'No',
+                data.essentials.exercise ? 'Yes' : 'No',
+                data.essentials.vitamins ? 'Yes' : 'No',
+                data.essentials.protein ? 'Yes' : 'No'
+            ];
+            
+            let csvLine = csvValues.join(',');
+            
+            // For the first time use, add a header row
+            let existingData = localStorage.getItem('dailyTrackerData');
+            let allData = '';
+            
+            if (!existingData) {
+                let headers = [
+                    'Date',
+                    'Mood_Morning',
+                    'Mood_Midday',
+                    'Mood_Evening',
+                    'Energy_Morning',
+                    'Energy_Midday',
+                    'Energy_Evening',
+                    'Rest',
+                    'Sleep',
+                    'FreshAir',
+                    'Water',
+                    'Exercise',
+                    'Vitamins',
+                    'Protein'
+                ].join(',');
+                
+                allData = headers + '\n' + csvLine;
+            } else {
+                allData = existingData + '\n' + csvLine;
+            }
+            
+            // Save to localStorage for persistent storage
+            localStorage.setItem('dailyTrackerData', allData);
+            
+            // Create the CSV file for download
+            let blob = new Blob([allData], { type: "text/csv" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "daily_tracker_data.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // Show success notification
+            const notification = document.getElementById('notification');
+            notification.textContent = "Data saved successfully!";
+            notification.style.backgroundColor = "#d4edda";
+            notification.style.color = "#155724";
+            notification.style.borderColor = "#c3e6cb";
+            notification.style.display = 'block';
+            
+            // Auto-hide notification after 3 seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+                // Reset success styling
+                notification.style.backgroundColor = "#f8d7da";
+                notification.style.color = "#721c24";
+                notification.style.borderColor = "#f5c6cb";
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
