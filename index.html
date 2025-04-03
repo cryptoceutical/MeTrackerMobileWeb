@@ -6,9 +6,10 @@
     <title>Daily Tracker</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 400px; margin: auto; }
+        .container { max-width: 600px; margin: auto; }
         label { display: block; margin-bottom: 5px; }
         .radio-group { display: flex; flex-wrap: wrap; gap: 5px; }
+        textarea { width: 100%; padding: 10px; margin-bottom: 10px; }
         button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; }
         .error { color: red; margin-top: 5px; display: none; }
         .notification { 
@@ -56,15 +57,20 @@
         <div class="radio-group" id="energy-evening"></div>
         <div class="error" id="energy-evening-error">Please select a value for evening energy</div>
         
-        <h3>Did I Have Enough? (Y/N)</h3>
+        <h3>Did I Have...? (Y/N)</h3>
         <label><input type="checkbox" id="rest"> Rest</label>
         <label><input type="checkbox" id="sleep"> Sleep</label>
         <label><input type="checkbox" id="fresh-air"> Fresh Air</label>
         <label><input type="checkbox" id="water"> Water</label>
         <label><input type="checkbox" id="exercise"> Exercise</label>
         <label><input type="checkbox" id="vitamins"> Vitamins</label>
-        <label><input type="checkbox" id="protein"> Protein</label>
+        <label><input type="checkbox" id="protein"> Protein</label>        
+        <label><input type="checkbox" id="pain">Pain</label>
         
+        <h3>Notes / Comments</h3>
+      
+        <textarea id="notes" rows="4"></textarea>
+        <br />
         <button onclick="saveData()">Save</button>
     </div>
 
@@ -153,7 +159,8 @@
                     exercise: document.getElementById('exercise').checked,
                     vitamins: document.getElementById('vitamins').checked,
                     protein: document.getElementById('protein').checked
-                }
+                },
+                notes: document.getElementById('notes').value
             };
             
             // Create a single line CSV string
@@ -171,7 +178,8 @@
                 data.essentials.water ? 'Yes' : 'No',
                 data.essentials.exercise ? 'Yes' : 'No',
                 data.essentials.vitamins ? 'Yes' : 'No',
-                data.essentials.protein ? 'Yes' : 'No'
+                data.essentials.protein ? 'Yes' : 'No',
+                data.notes
             ];
             
             let csvLine = csvValues.join(',');
@@ -195,7 +203,8 @@
                     'Water',
                     'Exercise',
                     'Vitamins',
-                    'Protein'
+                    'Protein',
+                    'Notes'
                 ].join(',');
                 
                 allData = headers + '\n' + csvLine;
